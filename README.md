@@ -12,9 +12,20 @@ A stock-market/crypto-style live price tracker for travel: cruises, flights, vac
 
 ## Data source
 
-Prices are driven by a Postgres `pg_cron` job (`simulate_price_ticks`) running every minute in Supabase, which applies a bounded random walk per item based on a per-item volatility setting. This gives a realistic, continuously-moving "market" without depending on paid travel-pricing APIs (which don't really exist in usable form for cruises/vacation packages, and are costly for flights/hotels).
+Cruises, vacation packages, and all-inclusive resorts are driven by a Postgres `pg_cron` job (`simulate_price_ticks`) running every minute in Supabase, which applies a bounded random walk per item based on a per-item volatility setting. No free, real-time API exists for these categories.
 
-Swapping in real prices later just means replacing what writes into the `price_ticks` table — the schema, frontend, alerts, and watchlist all stay the same.
+Flights and hotels can additionally pull **real quotes** from the Amadeus Self-Service API (free tier):
+
+- `supabase/functions/fetch-real-prices` is an Edge Function that gets an Amadeus OAuth token, fetches live flight offers and hotel offers for the tracked items, and writes them into `price_ticks` with `source = 'amadeus'` (surfaced in the UI as a "Live" badge). It also updates `items.base_price` so the per-minute simulator keeps oscillating around the real anchor price between fetches.
+- A `pg_cron` job calls this function every 6 hours (conservative, to stay inside Amadeus's free monthly quota across the ~13 tracked flight/hotel items).
+- Amadeus credentials are never committed to the repo or shipped to the browser — they live in a Postgres table (`integration_secrets`) with RLS enabled and no policies, so only the edge function's service-role connection can read them. To activate real data, insert your Amadeus test API key/secret:
+  ```sql
+  insert into integration_secrets (key, value) values
+    ('amadeus_client_id', 'YOUR_KEY'),
+    ('amadeus_client_secret', 'YOUR_SECRET');
+  ```
+  Until these rows exist, the function is a harmless no-op and everything stays simulated.
+- Hotel items store a `city_iata` code; the function resolves the actual Amadeus `hotelId` on first run via the Hotel List API and caches it — hotel IDs are never hardcoded/guessed.
 
 ## Stack
 

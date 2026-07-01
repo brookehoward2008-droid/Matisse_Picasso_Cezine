@@ -53,7 +53,14 @@ export function ItemDetail({
             <div className="text-slate-500 text-sm">
               {row.category_icon} {row.category_name} · {row.provider}
             </div>
-            <h2 className="text-xl font-semibold text-slate-100">{row.name}</h2>
+            <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+              {row.name}
+              {row.price_source === 'amadeus' && (
+                <span className="text-[10px] uppercase tracking-wide bg-sky-500/20 text-sky-400 px-1.5 py-0.5 rounded">
+                  Live
+                </span>
+              )}
+            </h2>
             <div className="text-slate-500 text-sm">{row.subtitle}</div>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-slate-200 text-2xl leading-none">
