@@ -1,0 +1,2 @@
+crawl4ai>=0.4
+supabase>=2.4
