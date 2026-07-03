@@ -5,3 +5,6 @@ dist
 *.log
 package-lock.json
 *.tsbuildinfo
+infra/.sst
+scraper/venv
+scraper/targets.json

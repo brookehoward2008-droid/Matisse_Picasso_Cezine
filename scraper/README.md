@@ -68,3 +68,36 @@ Run it on a schedule (cron, GitHub Actions, etc.) to keep prices fresh.
 Each run inserts one `price_ticks` row per successfully-scraped target and
 updates that item's `base_price`, exactly like the `fetch-real-prices`
 edge function does for its own source.
+
+## Deploying on a schedule with SST
+
+`../infra` has an [SST](https://sst.dev) config that runs this scraper on
+AWS Fargate on a `rate(6 hours)` schedule, instead of you keeping a machine
+on. It builds `Dockerfile` in this directory into a container task and
+wires up a Cron job to invoke it (`../infra/sst.config.ts`). A container
+task is used instead of a plain Lambda because crawl4ai bundles a real
+Chromium browser, which doesn't fit in Lambda's zip size limits.
+
+This provisions real, billable AWS resources (a VPC, an ECS cluster, a
+Fargate task, an EventBridge rule — roughly **$0.02/hour while the task
+runs**, a few times a day, per SST's Fargate pricing notes) and requires
+your own AWS account/credentials. Nothing here deploys itself; you decide
+when to run it.
+
+```bash
+# 1. create your real targets file (not committed to git)
+cp targets.example.json targets.json
+# edit targets.json with real URLs + verified css_selectors
+
+cd ../infra
+npm install
+
+# 2. set secrets once (never commit these)
+npx sst secret set SupabaseUrl "https://hcraoctteurtaoyvsghu.supabase.co" --stage production
+npx sst secret set SupabaseServiceRoleKey "..." --stage production
+
+# 3. deploy (requires AWS credentials configured locally, e.g. via `aws configure`)
+npm run deploy
+```
+
+To tear it down and stop being billed: `npm run remove`.

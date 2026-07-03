@@ -1,0 +1,14 @@
+{
+  "name": "travel-ticker-infra",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "sst dev",
+    "deploy": "sst deploy --stage production",
+    "remove": "sst remove --stage production"
+  },
+  "devDependencies": {
+    "sst": "^3"
+  }
+}
