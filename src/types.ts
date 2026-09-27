@@ -11,7 +11,7 @@ export interface TickerRow {
   base_price: number
   current_price: number
   last_updated: string
-  price_source: 'amadeus' | 'simulated'
+  price_source: 'kayak' | 'scraper' | 'simulated'
   price_24h_ago: number
   change_24h_amount: number
   change_24h_pct: number

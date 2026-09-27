@@ -1,5 +1,5 @@
 import type { PriceTick, TickerRow } from '../types'
-import { formatCurrency } from '../lib/session'
+import { formatCurrency, isLiveSource } from '../lib/session'
 import { Sparkline } from './Sparkline'
 
 interface TickerTableProps {
@@ -52,7 +52,7 @@ export function TickerTable({ rows, history, watchlist, onToggleWatch, onSelect 
               <td className="py-3 pr-4">
                 <div className="font-medium text-slate-100 flex items-center gap-2">
                   {row.name}
-                  {row.price_source === 'amadeus' && (
+                  {isLiveSource(row.price_source) && (
                     <span className="text-[10px] uppercase tracking-wide bg-sky-500/20 text-sky-400 px-1.5 py-0.5 rounded">
                       Live
                     </span>
